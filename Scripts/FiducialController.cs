@@ -63,6 +63,9 @@ public class FiducialController : MonoBehaviour
     void Start()
     {
         tuioManager = UniducialLibrary.TuioManager.Instance;
+        //set port explicitly (default is 3333)
+        tuioManager.TuioPort = 3334;
+        tuioManager.connect();
 
         mainCamera = GameObject.FindGameObjectWithTag("MainCamera").camera;
 

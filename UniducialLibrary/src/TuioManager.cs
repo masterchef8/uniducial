@@ -46,8 +46,9 @@ namespace UniducialLibrary
 
         private TuioClient client;
         private Dictionary<int, TuioObject> tuioObjects;
-        //port can be set in Unity
-        public int tuioPort = 3333;
+
+        //default port
+        private int tuioPort = 3333;
 
         public TuioManager()
         {
@@ -66,8 +67,6 @@ namespace UniducialLibrary
             //setup TUIO client connection
             client = new TuioClient(tuioPort);
             client.addTuioListener(this);
-
-            connect();
         }
 
         ~TuioManager()
@@ -111,13 +110,13 @@ namespace UniducialLibrary
         }
         #endregion
 
-        private void connect()
+        public void connect()
         {
             client.connect();
 
             if (client.isConnected())
             {
-                Debug.Log("TUIO connection on port " + tuioPort + "  established.");
+                Debug.Log("TUIO connection on port " + tuioPort + " established.");
                 isConnected = true;
             }
             else
@@ -166,6 +165,12 @@ namespace UniducialLibrary
         public bool IsConnected
         {
             get { return isConnected; }
+        }
+
+        public int TuioPort
+        {
+            get { return tuioPort; }
+            set { tuioPort = value; }
         }
     }
 }
