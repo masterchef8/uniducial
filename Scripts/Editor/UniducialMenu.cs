@@ -28,18 +28,36 @@ using UniducialLibrary;
 public class UniducialMenu : UnityEditor.Editor
 {
 
-    [MenuItem("GameObject/Create Other/Fiducial Object")]
+    private const string FICUCIAL_COMPONENT_NAME = "FiducialController";
 
+    [MenuItem("GameObject/Create Other/Fiducial Object")]
+    //creates a new GameObject with a Fiducial Input component
     public static void CreateFiducialObject()
     {
-        UniducialLibrary.Editor.Instance.createFiducialObject();
+        GameObject fiducialObject = new GameObject("FiducialObject");
+        fiducialObject.AddComponent(typeof(Transform));
+        fiducialObject.AddComponent(FICUCIAL_COMPONENT_NAME);
     }
 
     [MenuItem("Component/Input/Fiducial Controller")]
 
+    //attaches a fiducial input component to all selected Game Objects
     public static void AttachFiducialController()
     {
-        UniducialLibrary.Editor.Instance.createFiducialComponent();
+        GameObject[] gameObjects = Selection.gameObjects;
+
+        foreach (GameObject gameObject in Selection.gameObjects)
+        {
+            //make sure a GameObject can only be controlled by one marker
+            if (gameObject.GetComponent(FICUCIAL_COMPONENT_NAME) != null)
+            {
+                Debug.LogWarning("Game Object " + gameObject.name + " already has a fiducial controller attached");
+            }
+            else
+            {
+                gameObject.AddComponent(FICUCIAL_COMPONENT_NAME);
+            }
+        }
     }
 
     private static bool sceneContaintsTUIO()

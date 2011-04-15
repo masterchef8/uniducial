@@ -61,12 +61,13 @@ namespace UniducialLibrary
             instance = this;
             isConnected = false;
 
+            client = new TuioClient();
+            client.addTuioListener(this);
+
             //init members
             tuioObjects = new Dictionary<int, TuioObject>();
 
-            //setup TUIO client connection
-            client = new TuioClient(tuioPort);
-            client.addTuioListener(this);
+
         }
 
         ~TuioManager()
@@ -112,12 +113,14 @@ namespace UniducialLibrary
 
         public void connect()
         {
+            //setup TUIO client connection
             client.connect();
+            isConnected = client.isConnected();
 
-            if (client.isConnected())
+            if (isConnected)
             {
-                Debug.Log("TUIO connection on port " + tuioPort + " established.");
-                isConnected = true;
+
+                Debug.Log("TUIO connection on port " + client.getPort() + " established.");
             }
             else
             {
@@ -156,10 +159,13 @@ namespace UniducialLibrary
 
         public void disconnect()
         {
-            client.removeTuioListener(this);
-            client.disconnect();
-            Debug.Log("TUIO connection on port " + tuioPort + "  closed.");
-            isConnected = false;
+            if (isConnected)
+            {
+                client.removeTuioListener(this);
+                client.disconnect();
+                isConnected = client.isConnected();
+                Debug.Log("TUIO connection on port " + tuioPort + "  closed.");
+            }
         }
 
         public bool IsConnected
@@ -169,8 +175,8 @@ namespace UniducialLibrary
 
         public int TuioPort
         {
-            get { return tuioPort; }
-            set { tuioPort = value; }
+            get { return client.getPort(); }
+            set { client.setPort(value); }
         }
     }
 }

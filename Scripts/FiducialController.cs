@@ -63,8 +63,10 @@ public class FiducialController : MonoBehaviour
     void Start()
     {
         tuioManager = UniducialLibrary.TuioManager.Instance;
-        //set port explicitly (default is 3333)
-        tuioManager.TuioPort = 3334;
+
+        //uncomment next line to set port explicitly (default is 3333)
+        //tuioManager.TuioPort = 7777;
+
         tuioManager.connect();
 
         mainCamera = GameObject.FindGameObjectWithTag("MainCamera").camera;
@@ -90,7 +92,7 @@ public class FiducialController : MonoBehaviour
 
     void Update()
     {
-        if (tuioManager.isMarkerAlive(markerID))
+        if (tuioManager.IsConnected && tuioManager.isMarkerAlive(markerID))
         {
             TUIO.TuioObject marker = tuioManager.getMarker(markerID);
 

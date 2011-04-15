@@ -91,6 +91,12 @@ namespace TUIO
 			return port;
 		}
 
+        public void setPort(int port)
+        {
+            this.port = port;
+        }
+
+
 		/**
 		 * The TuioClient starts listening to TUIO messages on the configured UDP port
 		 * All reveived TUIO messages are decoded and the resulting TUIO events are broadcasted to all registered TuioListeners

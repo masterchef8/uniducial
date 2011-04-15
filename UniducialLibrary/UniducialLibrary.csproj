@@ -48,9 +48,6 @@
     </Reference>
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
-    <Reference Include="UnityEditor">
-      <HintPath>..\..\..\..\..\Program Files (x86)\Unity\Editor\Data\Managed\UnityEditor.dll</HintPath>
-    </Reference>
     <Reference Include="UnityEngine">
       <HintPath>..\..\..\..\..\Program Files (x86)\Unity\Editor\Data\Managed\UnityEngine.dll</HintPath>
     </Reference>
@@ -68,7 +65,6 @@
     <Compile Include="external-libs\TUIOConnector\TuioObject.cs" />
     <Compile Include="external-libs\TUIOConnector\TuioPoint.cs" />
     <Compile Include="external-libs\TUIOConnector\TuioTime.cs" />
-    <Compile Include="src\Editor.cs" />
     <Compile Include="src\TuioManager.cs" />
   </ItemGroup>
   <ItemGroup>
