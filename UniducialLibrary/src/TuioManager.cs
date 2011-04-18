@@ -47,9 +47,6 @@ namespace UniducialLibrary
         private TuioClient client;
         private Dictionary<int, TuioObject> tuioObjects;
 
-        //default port
-        private int tuioPort = 3333;
-
         public TuioManager()
         {
             if (instance != null)
@@ -120,11 +117,11 @@ namespace UniducialLibrary
             if (isConnected)
             {
 
-                Debug.Log("TUIO connection on port " + client.getPort() + " established.");
+                Debug.Log("Listening to TUIO port " + client.getPort() + ".");
             }
             else
             {
-                Debug.LogError("Could not establish a TUIO connection on port " + tuioPort + ".");
+                Debug.LogError("Failed to connect to TUIO port " + client.getPort() + ".");
             }
         }
 
@@ -161,10 +158,11 @@ namespace UniducialLibrary
         {
             if (isConnected)
             {
+                int port = client.getPort();
                 client.removeTuioListener(this);
                 client.disconnect();
                 isConnected = client.isConnected();
-                Debug.Log("TUIO connection on port " + tuioPort + "  closed.");
+                Debug.Log("Stopped listening to TUIO port " + port + ".");
             }
         }
 

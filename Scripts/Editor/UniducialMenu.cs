@@ -44,7 +44,6 @@ public class UniducialMenu : UnityEditor.Editor
     //attaches a fiducial input component to all selected Game Objects
     public static void AttachFiducialController()
     {
-        GameObject[] gameObjects = Selection.gameObjects;
 
         foreach (GameObject gameObject in Selection.gameObjects)
         {
