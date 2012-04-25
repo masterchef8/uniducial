@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2010 André Gröschel
+Copyright (c) 2012 André Gröschel
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -27,64 +27,67 @@ namespace UniducialLibrary
 {
     public class TuioManager : TuioListener
     {
-        private static TuioManager instance;
-        private bool isConnected;
+
+        // Singleton Instance
+        private static TuioManager m_Instance;
+        private TuioClient m_Client;
+        private List<TuioObject> m_TUIOObjects;
 
         public static TuioManager Instance
         {
             get
             {
-                if (instance == null)
+                if (m_Instance == null)
                 {
                     new TuioManager();
                 }
 
-                return instance;
+                return m_Instance;
             }
         }
 
 
-        private TuioClient client;
-        private Dictionary<int, TuioObject> tuioObjects;
+
 
         public TuioManager()
         {
-            if (instance != null)
+            if (m_Instance != null)
             {
                 Debug.LogError("Trying to create two instances of singleton.");
                 return;
             }
 
-            instance = this;
-            isConnected = false;
+            m_Instance = this;
 
-            client = new TuioClient();
-            client.addTuioListener(this);
+            m_Client = new TuioClient();
+            m_Client.addTuioListener(this);
 
             //init members
-            tuioObjects = new Dictionary<int, TuioObject>();
+            this.m_TUIOObjects = new List<TuioObject>();
 
 
         }
 
         ~TuioManager()
         {
-            disconnect();
+            Disconnect();
         } 
 
         #region TUIOListener methods
-        void TuioListener.addTuioObject(TuioObject tobj)
+
+        void TuioListener.addTuioObject(TuioObject in_TUIOObject)
         {
-            tuioObjects.Add(tobj.getSymbolID(), tobj);
+            this.m_TUIOObjects.Add(in_TUIOObject);
         }
 
         void TuioListener.updateTuioObject(TuioObject tobj)
         {
+
         }
 
-        void TuioListener.removeTuioObject(TuioObject tobj)
+        void TuioListener.removeTuioObject(TuioObject in_TUIOObject)
         {
-            tuioObjects.Remove(tobj.getSymbolID());
+            this.m_TUIOObjects.Remove(in_TUIOObject);
         }
 
         void TuioListener.addTuioCursor(TuioCursor tcur)
@@ -108,73 +111,76 @@ namespace UniducialLibrary
         }
         #endregion
 
-        public void connect()
+        public void Connect()
         {
             //setup TUIO client connection
-            client.connect();
-            isConnected = client.isConnected();
+            m_Client.connect();
 
-            if (isConnected)
+            if (this.m_Client.isConnected())
             {
 
-                Debug.Log("Listening to TUIO port " + client.getPort() + ".");
+                Debug.Log("Listening to TUIO port " + m_Client.getPort() + ".");
             }
             else
             {
-                Debug.LogError("Failed to connect to TUIO port " + client.getPort() + ".");
+                Debug.LogError("Failed to connect to TUIO port " + m_Client.getPort() + ".");
             }
         }
 
-        //TODO: remove method
-        public List<TuioObject> mGetClients()
+        public bool IsMarkerAlive(int in_MarkerID)
         {
-            return client.getTuioObjects();
-        }
 
-        public bool isMarkerAlive(int markerID)
-        {
-            return tuioObjects.ContainsKey(markerID);
-        }
-
-
-        public TuioObject getMarker(int markerID)
-        {
-            if (tuioObjects.ContainsKey(markerID))
+            foreach (TuioObject tuioObject in this.m_TUIOObjects)
             {
-                return tuioObjects[markerID];
+                if (tuioObject.getSymbolID() == in_MarkerID)
+                {
+                    return true;
+                }
             }
-            else
+
+            return false;
+        }
+
+
+        public TuioObject GetMarker(int in_MarkerID)
+        {
+            foreach (TuioObject tuioObject in this.m_TUIOObjects)
             {
-                return null;
+                if (tuioObject.getSymbolID() == in_MarkerID)
+                {
+                    return tuioObject;
+                }
+
             }
+
+            return null;
         }
 
-        public int getObjectCount()
+        public int GetObjectCount()
         {
-            return tuioObjects.Count;
+            return this.m_TUIOObjects.Count;
         }
 
-        public void disconnect()
+        public void Disconnect()
         {
-            if (isConnected)
+            if (this.m_Client.isConnected())
             {
-                int port = client.getPort();
-                client.removeTuioListener(this);
-                client.disconnect();
-                isConnected = client.isConnected();
+                int port = m_Client.getPort();
+                m_Client.removeTuioListener(this);
+                m_Client.disconnect();
                 Debug.Log("Stopped listening to TUIO port " + port + ".");
             }
         }
 
         public bool IsConnected
         {
-            get { return isConnected; }
+            get { return this.m_Client.isConnected(); }
         }
 
         public int TuioPort
         {
-            get { return client.getPort(); }
-            set { client.setPort(value); }
+            get { return m_Client.getPort(); }
+            set { m_Client.setPort(value); }
         }
     }
 }

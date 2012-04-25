@@ -1,5 +1,5 @@
 ﻿/*
-Copyright (c) 2010 André Gröschel
+Copyright (c) 2012 André Gröschel
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -24,175 +24,190 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 
+
 public class FiducialController : MonoBehaviour
 {
-    public int markerID = 0;
+    public int MarkerID = 0;
 
     public enum RotationAxis { Forward, Back, Up, Down, Left, Right };
 
     //translation
-    public bool isPositionMapped = false;
-    public bool invertX = false;
-    public bool invertY = false;
+    public bool IsPositionMapped = false;
+    public bool InvertX = false;
+    public bool InvertY = false;
 
     //rotation
-    public bool isRotationMapped = false;
-    public bool autoHideGO = false;
-    private bool controlsGUIElement = false;
+    public bool IsRotationMapped = false;
+    public bool AutoHideGO = false;
+    private bool m_ControlsGUIElement = false;
 
-    
-    public float cameraOffset = 10;
-    public RotationAxis rotationAxis = RotationAxis.Back;
-    private UniducialLibrary.TuioManager tuioManager;
-    private Camera mainCamera;
+
+    public float CameraOffset = 10;
+    public RotationAxis RotateAround = RotationAxis.Back;
+    private UniducialLibrary.TuioManager m_TuioManager;
+    private Camera m_MainCamera;
 
     //members
-    private Vector2 screenPosition;
-    private Vector3 worldPosition;
-    private Vector2 direction;
-    private float angle;
-    private float angleDegrees;
-    private float speed;
-    private float acceleration;
-    private float rotationSpeed;
-    private float rotationAcceleration;
-    private bool isVisible;
+    private Vector2 m_ScreenPosition;
+    private Vector3 m_WorldPosition;
+    private Vector2 m_Direction;
+    private float m_Angle;
+    private float m_AngleDegrees;
+    private float m_Speed;
+    private float m_Acceleration;
+    private float m_RotationSpeed;
+    private float m_RotationAcceleration;
+    private bool m_IsVisible;
 
-    public float rotationMultiplier = 1;
+    public float RotationMultiplier = 1;
 
-    void Start()
+    void Awake()
     {
-        tuioManager = UniducialLibrary.TuioManager.Instance;
+        this.m_TuioManager = UniducialLibrary.TuioManager.Instance;
 
         //uncomment next line to set port explicitly (default is 3333)
         //tuioManager.TuioPort = 7777;
 
-        tuioManager.connect();
+        this.m_TuioManager.Connect();
 
-        mainCamera = GameObject.FindGameObjectWithTag("MainCamera").camera;
+
 
         //check if the game object needs to be transformed in normalized 2d space
         if (isAttachedToGUIComponent())
         {
             Debug.LogWarning("Rotation of GUIText or GUITexture is not supported. Use a plane with a texture instead.");
-            controlsGUIElement = true;
+            this.m_ControlsGUIElement = true;
         }
 
-        screenPosition = Vector2.zero;
-        worldPosition = Vector3.zero;
-        direction = Vector2.zero;
-        angle = 0f;
-        angleDegrees = 0;
-        speed = 0f;
-        acceleration = 0f;
-        rotationSpeed = 0f;
-        rotationAcceleration = 0f;
-        isVisible = true;
+        this.m_ScreenPosition = Vector2.zero;
+        this.m_WorldPosition = Vector3.zero;
+        this.m_Direction = Vector2.zero;
+        this.m_Angle = 0f;
+        this.m_AngleDegrees = 0;
+        this.m_Speed = 0f;
+        this.m_Acceleration = 0f;
+        this.m_RotationSpeed = 0f;
+        this.m_RotationAcceleration = 0f;
+        this.m_IsVisible = true;
+    }
+
+    void Start()
+    {
+        //get reference to main camera
+        this.m_MainCamera = GameObject.FindGameObjectWithTag("MainCamera").camera;
+
+        //check if the main camera exists
+        if (this.m_MainCamera == null)
+        {
+            Debug.LogError("There is no main camera defined in your scene.");
+        }
     }
 
     void Update()
     {
-        if (tuioManager.IsConnected && tuioManager.isMarkerAlive(markerID))
+        if (this.m_TuioManager.IsConnected
+            && this.m_TuioManager.IsMarkerAlive(this.MarkerID))
         {
-            TUIO.TuioObject marker = tuioManager.getMarker(markerID);
+            TUIO.TuioObject marker = this.m_TuioManager.GetMarker(this.MarkerID);
 
             //update parameters
-            screenPosition.x = marker.getX();
-            screenPosition.y = marker.getY();
-            angle = marker.getAngle() * rotationMultiplier;
-            angleDegrees = marker.getAngleDegrees() * rotationMultiplier;
-            speed = marker.getMotionSpeed();
-            acceleration = marker.getMotionAccel();
-            rotationSpeed = marker.getRotationSpeed() * rotationMultiplier;
-            rotationAcceleration = marker.getRotationAccel();
-            direction.x = marker.getXSpeed();
-            direction.y = marker.getYSpeed();
-            isVisible = true;
+            this.m_ScreenPosition.x = marker.getX();
+            this.m_ScreenPosition.y = marker.getY();
+            this.m_Angle = marker.getAngle() * RotationMultiplier;
+            this.m_AngleDegrees = marker.getAngleDegrees() * RotationMultiplier;
+            this.m_Speed = marker.getMotionSpeed();
+            this.m_Acceleration = marker.getMotionAccel();
+            this.m_RotationSpeed = marker.getRotationSpeed() * RotationMultiplier;
+            this.m_RotationAcceleration = marker.getRotationAccel();
+            this.m_Direction.x = marker.getXSpeed();
+            this.m_Direction.y = marker.getYSpeed();
+            this.m_IsVisible = true;
 
             //set game object to visible, if it was hidden before
-            showGameObject();
+            ShowGameObject();
 
             //update transform component
-            updateTransform();
+            UpdateTransform();
         }
         else
         {
             //automatically hide game object when marker is not visible
-            if (autoHideGO)
+            if (this.AutoHideGO)
             {
-                hideGameObject();
+                HideGameObject();
             }
 
-            isVisible = false;
+            this.m_IsVisible = false;
         }
     }
 
 
     void OnApplicationQuit()
     {
-        if (tuioManager.IsConnected)
+        if (this.m_TuioManager.IsConnected)
         {
-            tuioManager.disconnect();
+            this.m_TuioManager.Disconnect();
         }
     }
 
-    private void updateTransform()
+    private void UpdateTransform()
     {
         //position mapping
-        if (isPositionMapped)
+        if (this.IsPositionMapped)
         {
             //calculate world position with respect to camera view direction
-            float xPos = screenPosition.x;
-            float yPos = screenPosition.y;
-            if (invertX) xPos = 1 - xPos;
-            if (invertY) yPos = 1 - yPos;
+            float xPos = this.m_ScreenPosition.x;
+            float yPos = this.m_ScreenPosition.y;
+            if (this.InvertX) xPos = 1 - xPos;
+            if (this.InvertY) yPos = 1 - yPos;
 
-            if (controlsGUIElement)
+            if (this.m_ControlsGUIElement)
             {
                 transform.position = new Vector3(xPos, 1 - yPos, 0);
             }
             else
             {
-                Vector3 position = new Vector3(xPos * mainCamera.GetScreenWidth(), (1 - yPos) * mainCamera.GetScreenHeight(), cameraOffset);
-                worldPosition = mainCamera.ScreenToWorldPoint(position);
+                Vector3 position = new Vector3(xPos * this.m_MainCamera.GetScreenWidth(),
+                    (1 - yPos) * this.m_MainCamera.GetScreenHeight(), this.CameraOffset);
+                this.m_WorldPosition = this.m_MainCamera.ScreenToWorldPoint(position);
                 //worldPosition += cameraOffset * mainCamera.transform.forward;
-                transform.position = worldPosition;
+                transform.position = this.m_WorldPosition;
             }
         }
 
         //rotation mapping
-        if (isRotationMapped)
+        if (this.IsRotationMapped)
         {
             Quaternion rotation = Quaternion.identity;
 
-            switch (rotationAxis)
+            switch (this.RotateAround)
             {
                 case RotationAxis.Forward:
-                    rotation = Quaternion.AngleAxis(angleDegrees, Vector3.forward);
+                    rotation = Quaternion.AngleAxis(this.m_AngleDegrees, Vector3.forward);
                     break;
                 case RotationAxis.Back:
-                    rotation = Quaternion.AngleAxis(angleDegrees, Vector3.back);
+                    rotation = Quaternion.AngleAxis(this.m_AngleDegrees, Vector3.back);
                     break;
-               case RotationAxis.Up:
-                    rotation = Quaternion.AngleAxis(angleDegrees, Vector3.up);
+                case RotationAxis.Up:
+                    rotation = Quaternion.AngleAxis(this.m_AngleDegrees, Vector3.up);
                     break;
-               case RotationAxis.Down:
-                    rotation = Quaternion.AngleAxis(angleDegrees, Vector3.down);
+                case RotationAxis.Down:
+                    rotation = Quaternion.AngleAxis(this.m_AngleDegrees, Vector3.down);
                     break;
-               case RotationAxis.Left:
-                    rotation = Quaternion.AngleAxis(angleDegrees, Vector3.left);
+                case RotationAxis.Left:
+                    rotation = Quaternion.AngleAxis(this.m_AngleDegrees, Vector3.left);
                     break;
-               case RotationAxis.Right:
-                    rotation = Quaternion.AngleAxis(angleDegrees, Vector3.right);
+                case RotationAxis.Right:
+                    rotation = Quaternion.AngleAxis(this.m_AngleDegrees, Vector3.right);
                     break;
             }
             transform.localRotation = rotation;
         }
     }
 
-    private void showGameObject()
+    private void ShowGameObject()
     {
-        if (controlsGUIElement)
+        if (this.m_ControlsGUIElement)
         {
             //show GUI components
             if (gameObject.guiText != null && !gameObject.guiText.enabled)
@@ -213,9 +228,9 @@ public class FiducialController : MonoBehaviour
         }
     }
 
-    private void hideGameObject()
+    private void HideGameObject()
     {
-        if (controlsGUIElement)
+        if (this.m_ControlsGUIElement)
         {
             //hide GUI components
             if (gameObject.guiText != null && gameObject.guiText.enabled)
@@ -245,45 +260,44 @@ public class FiducialController : MonoBehaviour
     }
     public Vector2 ScreenPosition
     {
-        get { return screenPosition; }
+        get { return this.m_ScreenPosition; }
     }
     public Vector3 WorldPosition
     {
-        get { return worldPosition; }
+        get { return this.m_WorldPosition; }
     }
     public Vector2 MovementDirection
     {
-        get { return direction; }
+        get { return this.m_Direction; }
     }
     public float Angle
     {
-        get { return angle; }
+        get { return this.m_Angle; }
     }
     public float AngleDegrees
     {
-        get { return angleDegrees; }
+        get { return this.m_AngleDegrees; }
     }
     public float Speed
     {
-        get { return speed; }
+        get { return this.m_Speed; }
     }
     public float Acceleration
     {
-        get { return acceleration; }
+        get { return this.m_Acceleration; }
     }
     public float RotationSpeed
     {
-        get { return rotationSpeed; }
+        get { return this.m_RotationSpeed; }
     }
     public float RotationAcceleration
     {
-        get { return rotationAcceleration; }
+        get { return this.m_RotationAcceleration; }
     }
     public bool IsVisible
     {
-        get { return isVisible; }
+        get { return this.m_IsVisible; }
     }
     #endregion
-
 }
 

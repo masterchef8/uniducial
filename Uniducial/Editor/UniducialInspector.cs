@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2010 André Gröschel
+Copyright (c) 2012 André Gröschel
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -35,6 +35,7 @@ public class UniducialInspector : UnityEditor.Editor
 
 
 
+
     }
 
     private void onEnable()
@@ -48,33 +49,34 @@ public class UniducialInspector : UnityEditor.Editor
         Camera mainCamera = GameObject.FindGameObjectWithTag("MainCamera").camera;
 
         EditorGUILayout.BeginHorizontal();
-        controller.markerID = EditorGUILayout.IntField("Marker ID", controller.markerID);
+        controller.MarkerID = EditorGUILayout.IntField("Marker ID", controller.MarkerID);
         EditorGUILayout.EndHorizontal();
         EditorGUILayout.BeginHorizontal();
-        controller.autoHideGO = EditorGUILayout.Toggle("Auto-hide GameObject", controller.autoHideGO);
+        controller.AutoHideGO = EditorGUILayout.Toggle("Auto-hide GameObject", controller.AutoHideGO);
         EditorGUILayout.EndHorizontal();
 
         EditorGUILayout.Separator();
 
         EditorGUILayout.BeginHorizontal();
-        controller.isPositionMapped = EditorGUILayout.Toggle("Control Position", controller.isPositionMapped);
+        controller.IsPositionMapped
+            = EditorGUILayout.Toggle("Control Position", controller.IsPositionMapped);
         EditorGUILayout.EndHorizontal();
 
-        if (controller.isPositionMapped)
+        if (controller.IsPositionMapped)
         {
 
             EditorGUILayout.BeginHorizontal();
-            controller.invertX = EditorGUILayout.Toggle("Invert X-Axis", controller.invertX);
+            controller.InvertX = EditorGUILayout.Toggle("Invert X-Axis", controller.InvertX);
             EditorGUILayout.EndHorizontal();
 
             EditorGUILayout.BeginHorizontal();
-            controller.invertY = EditorGUILayout.Toggle("Invert Y-Axis", controller.invertY);
+            controller.InvertY = EditorGUILayout.Toggle("Invert Y-Axis", controller.InvertY);
             EditorGUILayout.EndHorizontal();
 
             if (!mainCamera.isOrthoGraphic && !controller.isAttachedToGUIComponent())
             {
                 EditorGUILayout.BeginHorizontal();
-                controller.cameraOffset = EditorGUILayout.Slider("Camera offset", controller.cameraOffset, mainCamera.nearClipPlane, mainCamera.farClipPlane);
+                controller.CameraOffset = EditorGUILayout.Slider("Camera offset", controller.CameraOffset, mainCamera.nearClipPlane, mainCamera.farClipPlane);
                 EditorGUILayout.EndHorizontal();
             }
         }
@@ -85,17 +87,17 @@ public class UniducialInspector : UnityEditor.Editor
         if (!controller.isAttachedToGUIComponent())
         {
             EditorGUILayout.BeginHorizontal();
-            controller.isRotationMapped = EditorGUILayout.Toggle("Control Rotation", controller.isRotationMapped);
+            controller.IsRotationMapped = EditorGUILayout.Toggle("Control Rotation", controller.IsRotationMapped);
             EditorGUILayout.EndHorizontal();
 
-            if (controller.isRotationMapped)
+            if (controller.IsRotationMapped)
             {
                 EditorGUILayout.BeginHorizontal();
-                controller.rotationAxis = (FiducialController.RotationAxis)EditorGUILayout.EnumPopup("Rotation Axis", controller.rotationAxis);
+                controller.RotateAround = (FiducialController.RotationAxis)EditorGUILayout.EnumPopup("Rotation Axis", controller.RotateAround);
                 EditorGUILayout.EndHorizontal();
 
                 EditorGUILayout.BeginHorizontal();
-                controller.rotationMultiplier = EditorGUILayout.Slider("Rotation Factor", controller.rotationMultiplier, 0.01f, 5f);
+                controller.RotationMultiplier = EditorGUILayout.Slider("Rotation Factor", controller.RotationMultiplier, 0.01f, 5f);
                 EditorGUILayout.EndHorizontal();
             }
         }
